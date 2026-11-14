@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use Vaaler–ETK Toolkit in formalized mathematics, cite the software and its historical mathematical sources."
+type: software
+title: "Vaaler–ETK Toolkit: Fourier Approximation and Erdős–Turán–Koksma Discrepancy Bounds in Lean 4"
+authors:
+  - family-names: Dorsey
+    given-names: Charlie
+    affiliation: Raccoon Labs
+version: "0.1.0"
+repository-code: "https://github.com/charliedorsey/Vaaler-toolkit"
+license: "Apache-2.0"
+keywords:
+  - Lean 4
+  - Vaaler approximation
+  - Fejer kernel
+  - Fourier analysis
+  - Erdos-Turan-Koksma discrepancy
+  - signed weights
+  - total variation

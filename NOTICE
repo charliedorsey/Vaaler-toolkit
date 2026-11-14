@@ -1,0 +1,12 @@
+Vaaler–ETK Toolkit — Raccoon Labs
+Copyright (c) 2026 Charlie Dorsey, project-owned portions (owner declaration recorded 2026-11-12).
+
+This distribution incorporates adapted files originally published by Gershon Bialer:
+- MathExtras/Analysis/Fourier/FejerTriangle.lean, adapted as RML/Fourier/Vaaler/Internal/Analytic/FejerTriangle.lean
+- MathExtras/Analysis/Fourier/SincSquare.lean, adapted as RML/Fourier/Vaaler/Internal/Analytic/SincSquare.lean
+
+Copyright (c) 2026 Gershon Bialer. Licensed under Apache License, Version 2.0.
+Upstream: https://github.com/gersh/ternary-goldbach-lean
+Modifications in the VAALER copies: namespace relocation, and in SincSquare an import-path rewrite and namespace opening; both source files also received Lean 4.35 module declarations and public-import exposure wrappers. Mathematical proof bodies remain unchanged.
+
+Other external packages are downloaded by Lake and retain their own licenses.

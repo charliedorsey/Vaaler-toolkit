@@ -1,0 +1,45 @@
+name: Palomar predictive preflight (manual only)
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: Exact public GitHub repository
+        required: true
+        type: string
+      commit:
+        description: Exact immutable public source commit
+        required: true
+        type: string
+      pipeline_commit:
+        description: Exact Palomar workflow implementation commit
+        required: true
+        type: string
+      request_id:
+        description: Unique caller-generated correlation ID
+        required: true
+        type: string
+      mode:
+        description: Required full verification
+        required: true
+        type: string
+      execution_profile:
+        description: Required standard comparator profile
+        required: true
+        type: string
+      options:
+        description: Exact Comparator settings
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  palomar-preflight:
+    uses: PalomarRegistry/PalomarSubmission/.github/workflows/submission.yml@14aa8d6b3c2f14a8540605e37144560b9a00e7e7
+    with:
+      repository: ${{ inputs.repository }}
+      commit: ${{ inputs.commit }}
+      pipeline_commit: 14aa8d6b3c2f14a8540605e37144560b9a00e7e7
+      request_id: ${{ inputs.request_id }}
+      mode: full
+      execution_profile: palomar-standard-v1
+      options: ${{ inputs.options }}

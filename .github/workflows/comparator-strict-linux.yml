@@ -1,0 +1,102 @@
+name: Official Lean Comparator (strict, independent Ubuntu)
+
+# Deliberately no Palomar registry/submission actions and no reusable release token.
+# Public push verification only; this workflow never submits to Palomar.
+on:
+  push:
+    branches: [main, 'review/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: strict-comparator-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  strict-comparator:
+    name: Genuine proof accepted; counterexample rejected
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Inspect immutable checkout and strict config
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+          python3 scripts/check_release_docs.py
+          python3 scripts/verify_publication.py
+          python3 scripts/verify_palomar_candidate.py
+          python3 scripts/module_migration_integrity.py
+          python3 scripts/test_comparator_safety.py
+          python3 scripts/check_palomar_definition_identity.py --source-only
+      - name: Reclaim unused GitHub-hosted runner SDK storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "DISK_BEFORE_CLEANUP"
+          df -h /
+          # GitHub's stock Ubuntu image contains SDKs that the Lean Comparator
+          # never uses. The previous strict checks exhausted the runner volume.
+          # Remove only those preinstalled SDK caches on this ephemeral runner.
+          for directory in /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/powershell /usr/share/swift; do
+            if [[ -d "$directory" ]]; then
+              sudo rm -rf -- "$directory"
+            fi
+          done
+          echo "DISK_AFTER_CLEANUP"
+          df -h /
+      - name: Install pinned Lean 4.35.0
+        uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6 # v1
+        with:
+          build: false
+      - name: Install official Comparator sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap apparmor-profiles apparmor-utils
+          command -v bwrap
+          lean --version
+          lake --version
+          test "$(id -u)" != "0"
+          # Ubuntu 24.04 can deny userns creation to unconfined executables.
+          # Apply only the OS-provided *bwrap-specific* AppArmor policy.
+          # Do NOT relax kernel.apparmor_restrict_unprivileged_userns globally.
+          echo "AppArmor userns restriction: $(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo unavailable)"
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          installed=/etc/apparmor.d/bwrap-userns-restrict
+          if ! bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / --dev-bind /dev /dev --proc /proc -- /bin/true; then
+            if ! test -f "$profile"; then
+              echo "::error::Distro bwrap AppArmor userns profile unavailable; sandbox remains mandatory"
+              exit 1
+            fi
+            if sudo aa-status | grep -Eq '(^|[[:space:]])bwrap([[:space:]]|$)'; then
+              echo "::error::Conflicting active bwrap profile; refuse to override"
+              exit 1
+            fi
+            sudo install -m 0644 "$profile" "$installed"
+            sudo apparmor_parser -r "$installed"
+          fi
+          # A failure here is a hard HOLD, never permission to disable the
+          # official Lean Comparator sandbox.
+          bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / --dev-bind /dev /dev --proc /proc -- /bin/true
+          echo "BWRAP_SANDBOX_PROBE=PASS"
+      - name: Run strict official Comparator positive and negative controls
+        shell: bash
+        env:
+          COMPARATOR_EVIDENCE_DIR: ${{ github.workspace }}/comparator-evidence
+        run: |
+          set -euo pipefail
+          bash scripts/run_official_comparator_referee.sh
+      - name: Upload Comparator evidence (including failures)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: comparator-strict-evidence
+          path: comparator-evidence/
+          if-no-files-found: warn
+          retention-days: 30

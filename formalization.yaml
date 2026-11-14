@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+# Raccoon Labs Vaaler–ETK Toolkit: canonical source metadata.
+version: "v0.4"
+project:
+  name: "Vaaler–ETK Toolkit"
+  description: >-
+    A Lean 4 formalization of constructive Vaaler Fourier approximation
+    and Erdős–Turán–Koksma discrepancy inequalities on arbitrary finite
+    products of directed half-open torus arcs. Includes nonnegative,
+    signed real-weight, finite labelled complex-frequency and
+    external-bound interfaces, with coordinate-specific positive cutoffs.
+  authors: ["Charlie Dorsey"]
+  license: "Apache-2.0"
+  responsible_maintainers: ["Charlie Dorsey"]
+classification:
+  arxiv: ["math.NT", "math.CA", "cs.LO"]
+  msc2020: ["11K38", "42A10", "68V20"]
+sources:
+  - title: "Some extremal functions in Fourier analysis"
+    authors: ["Jeffrey D. Vaaler"]
+    type: "paper"
+    relationship: "formalizes"
+    note: >-
+      Historical analytic origin. The toolchain uses explicit
+      coordinate-dependent finite Fourier certificates.
+  - title: "ternary-goldbach-lean"
+    authors: ["Gershon Bialer"]
+    type: "other"
+    relationship: "adapts"
+    id: "https://github.com/gersh/ternary-goldbach-lean"
+    note: >-
+      FejerTriangle.lean and SincSquare.lean retain upstream
+      authorship, Apache-2.0 licensing and modification notices.
+related_formalizations: []
+status:
+  scope: >-
+    Certified signed torus-box theorem allows arbitrary real sample weights,
+    arbitrary finite coordinate dimension including dimension zero, mixed
+    wrapped/unwrapped half-open arcs, positive independent cutoff J_i,
+    signed main sums and total-variation error charges. Endpoint equalities
+    a_i=b_i are excluded. Other toolkit results include a nonnegative
+    complex norm-form bound and labelled complex signed-frequency expansions.
+    No arbitrary polyhedral discrepancy or optimal coefficient claim.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: ["propext", "Classical.choice", "Quot.sound"]
+automation:
+  methods:
+    - method: "agent"
+      models: ["OpenAI"]
+      framework: "AI-assisted Lean formalization under human direction"
+      tool_setup: >-
+        Pinned Lean 4 / Mathlib, exact source hash checks, independent
+        AI mathematical referee, private replay and publication audit.
+      cost:
+        wall_time: "Not tracked"
+        spend_usd: "Not tracked"
+        hardware: "Local Mac verification"
+  spend_usd: "Not tracked"
+  notes: >-
+    Charlie Dorsey directed the project as responsible human maintainer.
+    AI systems substantially assisted proofs, integration, audits, and
+    documentation; independent mathematical review was AI-based, not
+    peer-reviewed journal publication.
+fidelity:
+  divergences: >-
+    The canonical Challenge covers one signed-weight directed torus-box
+    ETK inequality from the broader imported library. It retains exact
+    Vaaler cotangent coefficients, wrapped arc indicators, positive
+    coordinate cutoffs and absolute-weight error terms. Fourteen
+    source-derived definitions are mirrored exactly and covered by
+    independent kernel-checked definitional equalities. The Comparator
+    uses no definition holes; its Linux CI requires a genuine proof to
+    pass and a counterfeit proof to fail by a definition-body mismatch.
+review:
+  status: "agent-reviewed"
+  reviewers: ["Orisel (independent AI mathematical referee)"]
+  notes: >-
+    Independent AI mathematical review and kernel verification are
+    disclosed separately and do not represent human journal peer
+    review. A clean Lean build, a strict Comparator result, publication
+    review and Palomar registration are distinct acceptance stages.
+    The precise reviewed source is established by its immutable
+    Git commit and matching CI receipts.
+alignment:
+  namespace: "VaalerETKChallenge"
+  statements:
+    - source: "Constructive signed-weight Erdős–Turán–Koksma discrepancy on directed torus boxes"
+      lean: "VaalerETKChallenge.signed_torus_box_discrepancy"
+      module: "Solution"
+      status: "proved"
+      note: >-
+        Exact adapter to RML.Fourier.Vaaler.Positive.weighted_torus_box_etk_signed.
+        Proof body is isolated in Solution and imported from the pinned library.
+acknowledgements: >-
+  Built on Lean 4 and Mathlib; two files adapted from Gershon Bialer's
+  Apache-2.0 development with retained copyright and notices.
+  The project identity is Raccoon Labs; Charlie Dorsey is the responsible
+  human author and publication maintainer. Model-assisted proof development
+  and independent AI review are disclosed.

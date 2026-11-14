@@ -1,0 +1,19 @@
+.lake/
+.local-replay/
+*.olean
+*.ilean
+*.trace
+.DS_Store
+__MACOSX/
+
+# Keep raw compiler receipts and private provenance out of public Git history.
+receipts/*.log
+.local-replay/
+.lake/
+__pycache__/
+*.pyc
+
+# Private referee and release receipts not intended for the public Git tree.
+private_evidence/
+
+# Working-court portable private checksum index.

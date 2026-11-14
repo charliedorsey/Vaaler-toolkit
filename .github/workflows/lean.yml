@@ -1,0 +1,52 @@
+name: Lean verification
+
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Source integrity and 61-file freeze
+        run: |
+          python3 scripts/verify_publication.py
+          python3 scripts/static_audit.py
+          python3 scripts/test_static_audit.py
+      - name: Check release documentation, links, and current toolchain
+        run: python3 scripts/check_release_docs.py
+      - name: Install pinned Lean toolchain
+        uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6 # v1
+        with:
+          build: false
+      - name: Check canonical Palomar challenge contract without network access
+        run: python3 scripts/verify_palomar_candidate.py
+      - name: Reject Comparator definition holes (synthetic negative controls)
+        run: |
+          python3 scripts/test_comparator_safety.py
+          python3 scripts/check_palomar_definition_identity.py --source-only
+      - name: Verify Palomar module admission and exact pre-migration proof bodies
+        run: python3 scripts/module_migration_integrity.py
+      - name: Fetch pinned Mathlib cache
+        run: lake exe cache get
+      - name: Compile entire public toolkit
+        run: lake build RML.Fourier.Vaaler.Toolkit
+      - name: Compile all source consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for src in examples/*.lean; do
+            lake env lean "$src"
+          done
+      - name: Validate signed ETK challenge and proven solution
+        run: python3 scripts/verify_challenge.py
+      - name: Compile canonical Mathlib-only challenge and proved solution
+        run: |
+          lake env lean Challenge.lean
+          lake env lean Solution.lean
+      - name: Compile and verify exact 14-definition identity court
+        run: python3 scripts/check_palomar_definition_identity.py
+      - name: Audit selected public theorem axioms
+        run: python3 scripts/check_axioms.py
